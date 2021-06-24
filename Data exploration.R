@@ -18,6 +18,12 @@ summary(green)
 glimpse(terrapin)
 summary(terrapin)
 
+# Change dates to proper time format
+green$Date<- as.POSIXlt(strptime(green$Date, format = "%H:%M:%S %d-%b-%Y", tz = "US/Central"))
+terrapin$Date<- as.POSIXlt(strptime(terrapin$Date, format = "%m/%d/%y %H:%M", tz = "US/Central"))
+tracks<- rbind(green[,c("Ptt","Date","Longitude","Latitude")],
+               terrapin[,c("Ptt","Date","Longitude","Latitude")])
+tracks$Ptt<- as.character(tracks$Ptt)
 
 # Create sf track objects
 green.sf<- st_as_sf(green %>% 
@@ -41,18 +47,21 @@ states<- ne_states(country = "United States of America", returnclass = "sf")
 
 ggplot() +
   geom_sf(data = states) +
-  geom_path(data = green, aes(Longitude, Latitude), color = "navy") +
-  geom_path(data = terrapin, aes(Longitude, Latitude), color = "chartreuse") +
-  # geom_sf(data = green.sf, color = "navy") +
+  geom_path(data = tracks, aes(Longitude, Latitude, color = Ptt, group = Ptt), alpha = 0.65) +
+  scale_color_brewer("ID", palette = "Dark2", labels = c("Terrapin","Green")) +
   coord_sf(xlim = c(-88,-86), ylim = c(30, 31)) +
   theme_bw() +
   theme(panel.grid = element_blank())
+# ggsave("Green_Terrapin tracks.png", width = 6, height = 4, units = "in", dpi = 300)
 
 
 ggplot() +
   geom_sf(data = states) +
-  geom_path(data = terrapin, aes(Longitude, Latitude)) +
-  geom_sf(data = terrapin.sf, color = "chartreuse") +
+  geom_path(data = tracks, aes(Longitude, Latitude, group = Ptt, color = as_date(Date))) +
+  scale_color_viridis_c("Date", trans = "date", option = "plasma", direction = -1,
+                        labels = as.Date) +
   coord_sf(xlim = c(-88,-86), ylim = c(30, 31)) +
   theme_bw() +
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank()) +
+  guides(color = guide_colorbar(reverse = TRUE))
+# ggsave("Green_Terrapin tracks time.png", width = 6, height = 4, units = "in", dpi = 300)
