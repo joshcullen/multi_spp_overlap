@@ -5,9 +5,8 @@ library(rnaturalearth)
 library(rnaturalearthdata)
 library(sf)
 
-green<- read.csv("~/Documents/Multi-Species FL Project/181790-Argos.csv", as.is = T)
-terrapin<- read.csv("~/Documents/Multi-Species FL Project/176034 Bertha all locations.csv",
-                    as.is = T)
+green<- read.csv("../181790-Argos.csv", as.is = T)
+terrapin<- read.csv("../176034-Argos.csv", as.is = T)
 
 
 # Check and summarize green turtle data
@@ -18,17 +17,22 @@ summary(green)
 glimpse(terrapin)
 summary(terrapin)
 
+# Remove rows with missing coordinates
+green<- green %>% 
+  drop_na(Longitude)
+terrapin<- terrapin %>% 
+  drop_na(Longitude)
+
 # Change dates to proper time format
 green$Date<- as.POSIXlt(strptime(green$Date, format = "%H:%M:%S %d-%b-%Y", tz = "US/Central"))
-terrapin$Date<- as.POSIXlt(strptime(terrapin$Date, format = "%m/%d/%y %H:%M", tz = "US/Central"))
+terrapin$Date<- as.POSIXlt(strptime(terrapin$Date, format = "%H:%M:%S %d-%b-%Y",
+                                    tz = "US/Central"))
 tracks<- rbind(green[,c("Ptt","Date","Longitude","Latitude")],
                terrapin[,c("Ptt","Date","Longitude","Latitude")])
 tracks$Ptt<- as.character(tracks$Ptt)
 
 # Create sf track objects
-green.sf<- st_as_sf(green %>% 
-                      drop_na(Longitude),
-                    coords = c("Longitude","Latitude"), crs = 4326, agr = "constant")
+green.sf<- st_as_sf(green, coords = c("Longitude","Latitude"), crs = 4326, agr = "constant")
 terrapin.sf<- st_as_sf(terrapin, coords = c("Longitude","Latitude"), crs = 4326, agr = "constant")
 
 
