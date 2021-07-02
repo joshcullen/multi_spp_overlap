@@ -69,3 +69,29 @@ ggplot() +
   theme(panel.grid = element_blank()) +
   guides(color = guide_colorbar(reverse = TRUE))
 # ggsave("Green_Terrapin tracks time.png", width = 6, height = 4, units = "in", dpi = 300)
+
+
+
+table(green$LocationQuality)
+table(terrapin$LocationQuality)
+
+
+# Inspect dt for primary time interval
+green2<- bayesmove::prep_data(green %>% 
+                                rename(date = Date), c('Longitude', 'Latitude'), 'Ptt')
+table(green2$dt)
+ggplot(green2) +
+  geom_histogram(aes(dt/60), binwidth = 10) +
+  theme_bw()
+## appears to be 30 min
+
+
+terrapin2<- bayesmove::prep_data(terrapin %>% 
+                                rename(date = Date), c('Longitude', 'Latitude'), 'Ptt')
+table(terrapin2$dt)
+ggplot(terrapin2) +
+  geom_histogram(aes(dt/3600), binwidth = 1) +
+  theme_bw()
+## not sure
+
+### Try using foieGras to model tracks
